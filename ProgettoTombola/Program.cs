@@ -16,46 +16,53 @@ namespace ProgettoTombola
         {
             //dichiarazione
             Random random = new Random();
-            int n = 0, riga = 0;
+            int n = 0, riga = 0, colonna = 0;
+            bool c = false;
+            string n1 = "";
             string[,] cart = new string[3, 9], tab = new string[9, 10];
             //generazione della cartella
-            cart = GenerazioneCartella(cart);
-            //stampa della cartella
-            for (int i = 0; i < 3; i++)
-            {
-                Console.SetCursorPosition(0, i);
-                for (int j = 0; j < 9; j++)
-                {
-                    Console.Write(cart[i, j] + "   ");
-                }
-            }
+            cart = GenerazioneCartella(cart, riga, colonna);
+            Console.WriteLine("Cartella 1");
+            riga = 1;
+            colonna = 0;
+            CartellaStampa(cart, riga, colonna);
             //stampa del tabellone
-            tab = Tabellone(tab);
-            //stampa del tabellone
-            riga = 6;
-            for (int i = 0; i < 9; i++)
-            {
-                Console.SetCursorPosition(0, riga);
-                for (int j = 0; j < 10; j++)
-                {
-                    Console.Write(tab[i, j] + "  ");
-                }
-                riga++;
-            }
+            tab = Tabellone(tab, riga, colonna);
+            Console.WriteLine("\n\n\nTabellone");
+            riga = 7;
+            TabelloneStampa(tab, riga, colonna);
             //estrazione del numero casuale
-            riga = 6;
+            riga = 7;
             while (true)
             {
-                Thread.Sleep(2000);
+                Thread.Sleep(2);
                 n = random.Next(1, 91);
+                if (n < 10)
+                {
+                    n1 = " " + n.ToString();
+                }
+                else
+                {
+                    n1 = n.ToString();
+                }
                 Console.SetCursorPosition(80, 21);
                 Console.WriteLine(n);
+                //aggiornamento del tabellone
+                TabelloneAggiornamento(tab, n, riga, colonna);
                 //verifica della corrisponenza nelle cartelle
-                VerificaCorrispondenza(cart, tab, n, riga);
+                CartellaVerificaCorrispondenza(cart, n1, riga, colonna);
+                //verifica cinquine
+                VerificaCinquina(cart, riga, colonna);
+                //verifica tombola
+                c = VerificaTombola(cart, riga, colonna, c);
+                if (c)
+                {
+                    break;
+                }
             }
         }
 
-        static string[,] GenerazioneCartella(string[,] cartella)
+        static string[,] GenerazioneCartella(string[,] cartella, int riga, int colonna)
         {
             //dichiarazione
             Random random = new Random();
@@ -110,11 +117,25 @@ namespace ProgettoTombola
             return cartella;
         }
 
-        static string[,] Tabellone(string[,] tabellone)
+        static void CartellaStampa(string[,] cartella, int riga, int colonna)
+        {
+            //stampa della cartella
+            for (int i = 0; i < 3; i++)
+            {
+                Console.SetCursorPosition(colonna, riga);
+                for (int j = 0; j < 9; j++)
+                {
+                    Console.Write(cartella[i, j] + "   ");
+                }
+                riga++;
+            }
+        }
+
+        static string[,] Tabellone(string[,] tabellone, int riga, int colonna)
         {
             //matrice tabellone
             tabellone = new string[9, 10];
-            int n = 1, riga = 4;
+            int n = 1;
             //ciclo per la generazione del tabellone
             for (int i = 0; i < 9; i++)
             {
@@ -127,13 +148,26 @@ namespace ProgettoTombola
             return tabellone;
         }
 
-        static void VerificaCorrispondenza(string[,] cartella, string[,] tabellone, int numero, int riga)
+        static void TabelloneStampa(string[,] tabellone, int riga, int colonna)
         {
-            //dichiarazioni
             //stampa del tabellone
             for (int i = 0; i < 9; i++)
             {
-                Console.SetCursorPosition(0, riga);
+                Console.SetCursorPosition(colonna, riga);
+                for (int j = 0; j < 10; j++)
+                {
+                    Console.Write(tabellone[i, j] + "  ");
+                }
+                riga++;
+            }
+        }
+
+        static void TabelloneAggiornamento(string[,] tabellone, int numero, int riga, int colonna)
+        {
+            //stampa del tabellone
+            for (int i = 0; i < 9; i++)
+            {
+                Console.SetCursorPosition(colonna, riga);
                 for (int j = 0; j < 10; j++)
                 {
                     if (tabellone[i, j] == numero.ToString())
@@ -145,20 +179,77 @@ namespace ProgettoTombola
                 }
                 riga++;
             }
-            //stampa della cartella con corrisppndenza
+        }
+
+        static void CartellaVerificaCorrispondenza(string[,] cartella, string numero, int riga, int colonna)
+        {
+            //stampa della cartella con corrispondenza
+            riga = 1;
             for (int i = 0; i < 3; i++)
             {
-                Console.SetCursorPosition(0, i);
+                Console.SetCursorPosition(colonna, riga);
                 for (int j = 0; j < 9; j++)
                 {
-                    if (cartella[i, j] == numero.ToString())
+                    if (cartella[i, j] == numero)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
+                        Thread.Sleep(1000);
+                        cartella[i, j] = "^^";
                     }
                     Console.Write(cartella[i, j] + "   ");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
+                riga++;
             }
+        }
+
+        static void VerificaCinquina(string[,] cartella, int riga, int colonna)
+        {
+            //dichiarazione
+            int contatore = 0;
+            //ciclo
+            riga = 25;
+            for (int i = 0; i < 3; i++)
+            {
+                contatore = 0;
+                for (int j = 0; j < 9; j++)
+                {
+                    if (cartella[i, j] == "^^")
+                    {
+                        contatore++;
+                    }
+                }
+                if (contatore == 5)
+                {
+                    Console.SetCursorPosition(colonna, riga);
+                    Console.WriteLine("Cinquina!");
+                }
+            }
+        }
+
+        static bool VerificaTombola(string[,] cartella, int riga, int colonna, bool c)
+        {
+            //dichiarazione
+            int contatore = 0;
+            //ciclo
+            riga = 25;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    if (cartella[i, j] == "^^")
+                    {
+                        contatore++;
+                    }
+                }
+            }
+            if (contatore == 15)
+            {
+                Console.SetCursorPosition(colonna, riga);
+                Console.WriteLine("Tombola!");
+                c = true;
+            }
+            return c;
         }
     }
 }
