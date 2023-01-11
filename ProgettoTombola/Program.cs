@@ -17,25 +17,34 @@ namespace ProgettoTombola
             //dichiarazione
             Random random = new Random();
             int n = 0, riga = 0, colonna = 0;
-            bool c = false;
+            bool c = false, e = false;
             string n1 = "";
-            string[,] cart = new string[3, 9], tab = new string[9, 10];
-            //generazione della cartella
-            cart = GenerazioneCartella(cart, riga, colonna);
-            Console.WriteLine("Cartella 1");
-            riga = 1;
-            colonna = 0;
-            CartellaStampa(cart, riga, colonna);
+            string[,] cart = new string[3, 9], cart1 = new string[3, 9], tab = new string[9, 10];
             //stampa del tabellone
+            riga = 2;
+            colonna = 40;
             tab = Tabellone(tab, riga, colonna);
-            Console.WriteLine("\n\n\nTabellone");
-            riga = 7;
+            Console.SetCursorPosition(colonna, riga - 1);
+            Console.WriteLine("Tabellone");
             TabelloneStampa(tab, riga, colonna);
+            //generazione della prima cartella
+            riga = 15;
+            colonna = 5;
+            cart = GenerazioneCartella(cart, random);
+            Console.SetCursorPosition(colonna, riga - 1);    
+            Console.WriteLine("Cartella 1");
+            CartellaStampa(cart, riga, colonna);
+            //generazione della seconda cartella
+            riga = 15;
+            colonna = 70;
+            cart1 = GenerazioneCartella(cart1, random);
+            Console.SetCursorPosition(colonna, riga - 1);
+            Console.WriteLine("Cartella 2");
+            CartellaStampa(cart1, riga, colonna);
             //estrazione del numero casuale
-            riga = 7;
             while (true)
             {
-                Thread.Sleep(2);
+                Thread.Sleep(1000);
                 n = random.Next(1, 91);
                 if (n < 10)
                 {
@@ -45,27 +54,64 @@ namespace ProgettoTombola
                 {
                     n1 = n.ToString();
                 }
-                Console.SetCursorPosition(80, 21);
-                Console.WriteLine(n);
+                Console.SetCursorPosition(49, 12);
+                Console.WriteLine("Numero estratto: " + n);
                 //aggiornamento del tabellone
+                riga = 2;
+                colonna = 40;
                 TabelloneAggiornamento(tab, n, riga, colonna);
                 //verifica della corrisponenza nelle cartelle
+                riga = 15;
+                colonna = 5;
                 CartellaVerificaCorrispondenza(cart, n1, riga, colonna);
+                riga = 15;
+                colonna = 70;
+                CartellaVerificaCorrispondenza(cart1, n1, riga, colonna);
                 //verifica cinquine
-                VerificaCinquina(cart, riga, colonna);
+                riga = 15;
+                colonna = 5;
+                e = false;
+                e = VerificaCinquina(cart, riga, colonna, e);
+                if (e)
+                {
+                    Console.SetCursorPosition(colonna, riga + 5);
+                    Console.WriteLine("Cartella 1: Cinquina!");
+                }
+                riga = 15;
+                colonna = 70;
+                e = false;
+                e = VerificaCinquina(cart1, riga, colonna, e);
+                if (e)
+                {
+                    Console.SetCursorPosition(colonna, riga + 5);
+                    Console.WriteLine("Cartella 2: Cinquina!");
+                }
                 //verifica tombola
+                riga = 15;
+                colonna = 5;
+                c = false;
                 c = VerificaTombola(cart, riga, colonna, c);
                 if (c)
                 {
+                    Console.SetCursorPosition(colonna, riga + 5);
+                    Console.WriteLine("Cartella 1: Tombola! ");
+                }
+                riga = 15;
+                colonna = 70;
+                c = false;
+                c = VerificaTombola(cart1, riga, colonna, c);
+                if (c)
+                {
+                    Console.SetCursorPosition(colonna, riga + 5);
+                    Console.WriteLine("Cartella 2: Tombola! ");
                     break;
                 }
             }
         }
 
-        static string[,] GenerazioneCartella(string[,] cartella, int riga, int colonna)
+        static string[,] GenerazioneCartella(string[,] cartella, Random random)
         {
             //dichiarazione
-            Random random = new Random();
             cartella = new string[3, 9];
             int n = 1, m = 11;
             //generazione della cartella
@@ -77,8 +123,13 @@ namespace ProgettoTombola
                 numerogen = "0";
                 for (int j = 0; j < 9; j++)
                 {
-                    //generazione di numeri non ripetuti nella cartella
                     numerogen = random.Next(n, m).ToString();
+                    //correzione dell'allineamento dei numeri in colonna
+                    if (int.Parse(numerogen) < 10)
+                    {
+                        numerogen = " " + numerogen.ToString();
+                    }
+                    //generazione di numeri non ripetuti nella cartella
                     for (int k = 0; k < 3; k++)
                     {
                         for (int l = 0; l < 9; l++)
@@ -88,11 +139,6 @@ namespace ProgettoTombola
                                 numerogen = random.Next(n, m).ToString();
                             }
                         }
-                    }
-                    //correzione dell'allineamento dei numeri in colonna
-                    if (n == 1 && m == 11 && numerogen != "10")
-                    {
-                        numerogen = " " + numerogen;
                     }
                     cartella[i, j] = numerogen;
                     n = n + 10;
@@ -141,7 +187,14 @@ namespace ProgettoTombola
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    tabellone[i, j] = n.ToString();
+                    if (n < 10)
+                    {
+                        tabellone[i, j] = " " + n.ToString();
+                    }
+                    else
+                    {
+                        tabellone[i, j] = n.ToString();
+                    }
                     n++;
                 }
             }
@@ -173,6 +226,12 @@ namespace ProgettoTombola
                     if (tabellone[i, j] == numero.ToString())
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
+                        tabellone[i, j] = "--";
+                    }
+                    else if (tabellone[i, j] == " " + numero.ToString())
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        tabellone[i, j] = "--";
                     }
                     Console.Write(tabellone[i, j] + "  ");
                     Console.ForegroundColor = ConsoleColor.White;
@@ -184,7 +243,6 @@ namespace ProgettoTombola
         static void CartellaVerificaCorrispondenza(string[,] cartella, string numero, int riga, int colonna)
         {
             //stampa della cartella con corrispondenza
-            riga = 1;
             for (int i = 0; i < 3; i++)
             {
                 Console.SetCursorPosition(colonna, riga);
@@ -203,7 +261,7 @@ namespace ProgettoTombola
             }
         }
 
-        static void VerificaCinquina(string[,] cartella, int riga, int colonna)
+        static bool VerificaCinquina(string[,] cartella, int riga, int colonna, bool e)
         {
             //dichiarazione
             int contatore = 0;
@@ -221,10 +279,10 @@ namespace ProgettoTombola
                 }
                 if (contatore == 5)
                 {
-                    Console.SetCursorPosition(colonna, riga);
-                    Console.WriteLine("Cinquina!");
+                    e = true;
                 }
             }
+            return e;
         }
 
         static bool VerificaTombola(string[,] cartella, int riga, int colonna, bool c)
@@ -245,8 +303,6 @@ namespace ProgettoTombola
             }
             if (contatore == 15)
             {
-                Console.SetCursorPosition(colonna, riga);
-                Console.WriteLine("Tombola!");
                 c = true;
             }
             return c;
